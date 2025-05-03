@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane minWidth="-Infinity" prefHeight="300.0" prefWidth="382.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="files.project_prog2_javafx.AddController">
+    <children>
+        <Button fx:id="submit" layoutX="127.0" layoutY="268.0" mnemonicParsing="false" onAction="#submitTransaction" text="Submit" />
+        <Button fx:id="cancel" layoutX="203.0" layoutY="268.0" mnemonicParsing="false" onAction="#cancelTransaction" text="Cancel" />
+        <Label layoutX="20.0" layoutY="49.0" text="Description">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <Label layoutX="22.0" layoutY="119.0" text="Amount">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <Label layoutX="22.0" layoutY="189.0" text="Category">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <Label layoutX="254.0" layoutY="51.0" text="Date">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <Label layoutX="259.0" layoutY="120.0" text="Type">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <Label layoutX="127.0" layoutY="14.0" text="Add a Transaction">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </Label>
+        <TextField fx:id="descText" layoutX="20.0" layoutY="77.0" prefHeight="25.0" prefWidth="207.0" promptText="Description" />
+        <TextField fx:id="amountText" layoutX="22.0" layoutY="146.0" prefHeight="25.0" prefWidth="124.0" promptText="\$" />
+        <DatePicker fx:id="dateSelection" layoutX="254.0" layoutY="78.0" prefHeight="25.0" prefWidth="113.0" promptText="Date" />
+        <ChoiceBox fx:id="categorySelection" layoutX="22.0" layoutY="215.0" prefHeight="25.0" prefWidth="124.0" />
+        <ChoiceBox fx:id="tranType" layoutX="254.0" layoutY="146.0" prefHeight="25.0" prefWidth="113.0" />
+      <Label fx:id="message" layoutX="160.0" layoutY="294.0">
+         <font>
+            <Font size="15.0" />
+         </font>
+      </Label>
+    </children>
+</AnchorPane>

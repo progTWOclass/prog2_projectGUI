@@ -1,10 +1,14 @@
-package files.project_prog2_javafx;
-
 // -------------------------------------------------------
 // Final Project
 // Written by: (include your name and student id)
 // For “Programming 2” Section (include number)– Winter 2025
 // --------------------------------------------------------
+/**
+ * This class is implementing FileHandler file. This class must have all the methods
+ * in the interface class with implementations/logic.
+ * */
+package files.project_prog2_javafx;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.io.*;
@@ -30,11 +34,11 @@ public class HandleFileImplement implements FileHandler{
             System.out.println("File created successfully");
             printNumber.close();
         }catch (IOException iOE){
-            System.err.println("file not created. something went wrong");
+            System.err.println("Transaction file not created. something went wrong");
         }
     }
 
-    //retrieve the data from the text file
+    //retrieve transaction data from the text file
     @Override
     public ArrayList<Transaction> loadFromFile(String file) throws IOException{
         ArrayList<Transaction> transactions = new ArrayList<>();
@@ -46,10 +50,10 @@ public class HandleFileImplement implements FileHandler{
                 // Split by comma followed by optional whitespace
                 String[] fileData = fileContent.split(",\\s*");
 
-                // Remove the prefix (INCOME: or EXPENSE:) from the first element
-                //because now the program recognizes ex: "INCOME:Salary" as [0]
-                //split the array, [INCOME, Salary] -> [0],[1], remove "INCOME" by
-                //forcing [0] to be "salary" instead
+                //Remove the prefix (INCOME: or EXPENSE:) from the first element
+                //the program recognizes filedata[0] as [INCOME:Salary]. So, we
+                //split the first element by the colon, and we get [INCOME, Salary] -> [0,1],
+                //we then remove "INCOME" by overriding the filedata[0] by taking the [1] in the second line
                 String type = fileData[0].split(":")[0].trim();
                 fileData[0] = fileData[0].split(":")[1].trim();
 
@@ -69,9 +73,51 @@ public class HandleFileImplement implements FileHandler{
             }
             readFile.close();
         }catch (IOException iOE){
-            System.err.println("file not found.");
+            System.err.println("transaction file not found.");
         }
         return transactions;
+    }
+
+    //save spending limit to a separate text file
+    public void saveLimits(String limitsFile, ArrayList<SpendingLimit> limits) throws IOException {
+        try{
+            PrintWriter writer = new PrintWriter(new FileOutputStream(limitsFile));
+            for (SpendingLimit limit : limits) {
+                writer.println("SPENDING LIMIT:" + limit.getCategory() + ", " +
+                        limit.getLimit());
+            }
+            writer.close();
+        }catch (IOException iOE){
+            System.err.println("Transaction file not created. something went wrong");
+        }
+    }
+
+    //retrieve spending limit data from the saved spending limit text file
+    public ArrayList<SpendingLimit> loadLimits(String limitsFile) throws IOException {
+        ArrayList<SpendingLimit> limits = new ArrayList<>();
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader(limitsFile));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    String[] fileData = line.split(",\\s*");
+
+                    //Remove (SPENDING LIMIT:RENT) from the first element
+                    //the program recognizes filedata[0] as [SPENDING LIMIT:RENT].
+                    //After splitting by the colon, and we get [SPENDING LIMIT, RENT],
+                    //we then remove "SPENDING LIMIT" by overriding the filedata[0] with [1]
+                    fileData[0] = fileData[0].split(":")[1].trim();
+
+                    Expense.ExpenseCategory limitCategory = Expense.ExpenseCategory.valueOf(fileData[0]);
+                    double limit = Double.parseDouble(fileData[1]);
+                    limits.add(new SpendingLimit(limitCategory,limit));
+                }
+            }
+            reader.close();
+        }catch (IOException iOE){
+            System.err.println("spending limit file not found.");
+        }
+        return limits;
     }
 }
 

@@ -325,11 +325,11 @@ public class Testing {
 
     public static void calculateMoney(){
         System.out.println("Your total income");
-        System.out.printf("%.2f\n", manager.getTotalIncome());
+        System.out.printf("$%.2f\n", manager.getTotalIncome());
         System.out.println("Your total expense");
-        System.out.printf("%.2f\n", manager.getTotalExpense());
+        System.out.printf("$%.2f\n", manager.getTotalExpense());
         System.out.println("Your current balance");
-        System.out.printf("%.2f\n", manager.getBalance());
+        System.out.printf("$%.2f\n", manager.getBalance());
     }
 
     public static void saveTransactionFile() {

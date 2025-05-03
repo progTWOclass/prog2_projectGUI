@@ -1,16 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
-
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="files.project_prog2_javafx.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+<AnchorPane fx:id="loadFile" minWidth="-Infinity" prefHeight="775.0" prefWidth="1312.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="files.project_prog2_javafx.MainController">
+   <children>
+      <Button fx:id="saveFileButton" layoutX="16.0" layoutY="238.0" mnemonicParsing="false" onAction="#saveTran" text="Save to File" />
+      <Button fx:id="searchButton" layoutX="14.0" layoutY="197.0" mnemonicParsing="false" onAction="#searchTran" text="Search by Description" />
+      <Button fx:id="addButton" layoutX="203.0" layoutY="695.0" mnemonicParsing="false" onAction="#addTran" text="Add Transaction" />
+      <Button fx:id="editButton" layoutX="462.0" layoutY="695.0" mnemonicParsing="false" onAction="#editTran" text="Edit" />
+      <Label layoutX="595.0" layoutY="22.0" text="Transactions">
+         <font>
+            <Font size="22.0" />
+         </font>
+      </Label>
+      <TableView fx:id="tranTable" layoutX="203.0" layoutY="104.0" prefHeight="575.0" prefWidth="594.0">
+        <columns>
+            <TableColumn fx:id="dateColumn" prefWidth="118.0" text="Date" />
+          <TableColumn fx:id="descColumn" prefWidth="165.0" text="Description" />
+          <TableColumn fx:id="amountColumn" prefWidth="120.0" text="Amount" />
+            <TableColumn fx:id="typeColumn" prefWidth="63.0" text="Type" />
+            <TableColumn fx:id="categoryColumn" prefWidth="125.0" text="Category" />
+        </columns>
+      </TableView>
+      <Button fx:id="loadFileButton" layoutX="16.0" layoutY="280.0" mnemonicParsing="false" onAction="#loadTran" text="Load File" />
+      <Button fx:id="deleteButton" layoutX="324.0" layoutY="695.0" mnemonicParsing="false" onAction="#deleteTran" text="Delete transaction" />
+      <TextField fx:id="searchText" layoutX="14.0" layoutY="155.0" prefHeight="25.0" prefWidth="159.0" promptText="Search Transactions" />
+      <Label fx:id="displayBalance" layoutX="203.0" layoutY="69.0" prefHeight="27.0" prefWidth="138.0" text="Current Balance:">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="displayName" layoutX="1014.0" layoutY="28.0" text="Name">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <PieChart fx:id="pieChart" layoutX="816.0" layoutY="412.0" prefHeight="350.0" prefWidth="470.0" title="Expense chart" />
+      <Label fx:id="balance" layoutX="341.0" layoutY="69.0" text="0">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <DialogPane layoutX="867.0" layoutY="93.0" prefHeight="135.0" prefWidth="360.0" />
+      <Button fx:id="spendLimitButton" layoutX="522.0" layoutY="695.0" mnemonicParsing="false" onAction="#limitCategory" text="Add/Delete Spending Limit" />
+      <BarChart fx:id="spLimitGraph" layoutX="808.0" layoutY="63.0" prefHeight="330.0" prefWidth="485.0" title="Spending Limit">
+        <xAxis>
+          <CategoryAxis side="BOTTOM" />
+        </xAxis>
+        <yAxis>
+          <NumberAxis side="LEFT" />
+        </yAxis>
+      </BarChart>
+   </children>
+</AnchorPane>
