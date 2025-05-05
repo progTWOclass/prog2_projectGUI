@@ -1,7 +1,7 @@
 // -------------------------------------------------------
 // Final Project
-// Written by: (include your name and student id)
-// For “Programming 2” Section (include number)– Winter 2025
+// Written by: Steve Banh 1971537
+// For “Programming 2” Section 02 – Winter 2025
 // --------------------------------------------------------
 /**
  * This is a class that manages transactions and spending limit set by the user
@@ -87,7 +87,7 @@ public class FinanceManager {
 
     //METHODS
     //add a transaction either income or expense
-    public void addTransaction(Transaction tranAdd) throws SpendingLimitExceededException {
+    public void addTransaction(Transaction tranAdd) throws SpendingLimitExceededException{
         //check if adding another expense will exceed our spending limit or not
         if (tranAdd instanceof Expense) {
             Expense addExpense = (Expense) tranAdd;
@@ -95,6 +95,11 @@ public class FinanceManager {
         }
         transactions.add(tranAdd);
         System.out.println("Transaction registered successfully");
+    }
+
+    //force adding a transaction even tho the transaction exceeds the spending limit
+    public void forceAddTransaction(Transaction t) {
+        transactions.add(t);
     }
 
     //remove a transaction based on the keyword given by the user
@@ -200,35 +205,14 @@ public class FinanceManager {
             //if a transaction is an expense, we check for the spending limit to see
             //if the limit has been exceeded or not
             if(newTran instanceof Expense) {
-                Expense newExpense = (Expense) newTran;
-                checkSpendingLimit(newExpense);
+                Expense expense = (Expense) newTran;
+                    checkSpendingLimit(expense);
             }
             //replace the old transaction with the new transaction at the same index
             transactions.set(index, newTran);
         }
     }
 
-//    public void modifyTransaction(Transaction oldTran, Transaction newTran)
-//            throws SpendingLimitExceededException {
-//
-//        int index = transactions.indexOf(oldTran);
-//        if(index == -1) return;
-//
-//        // Only check spending limit if:
-//        // 1. Both are expenses
-//        // 2. The amount has actually changed
-//        if(oldTran instanceof Expense && newTran instanceof Expense) {
-//            Expense oldExpense = (Expense) oldTran;
-//            Expense newExpense = (Expense) newTran;
-//
-//            // Only check if amount changed AND it's an increase
-//            if(newExpense.getAmount() != oldExpense.getAmount() &&
-//                    newExpense.getAmount() > oldExpense.getAmount()) {
-//                checkSpendingLimit(newExpense);
-//            }
-//        }
-//        transactions.set(index, newTran);
-//    }
 
     //HELPER METHODS
     //searchTransactionByDescription() will use this method to find a transaction by specific keyword

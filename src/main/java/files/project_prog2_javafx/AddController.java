@@ -1,7 +1,7 @@
 // -------------------------------------------------------
 // Final Project
-// Written by: (include your name and student id)
-// For “Programming 2” Section (include number)– Winter 2025
+// Written by: Steve Banh 1971537
+// For “Programming 2” Section 02 – Winter 2025
 // --------------------------------------------------------
 /**
  * This is an add transaction controller class that has a separate window from the main one. This window allows

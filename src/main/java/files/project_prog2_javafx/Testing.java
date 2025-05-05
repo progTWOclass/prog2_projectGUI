@@ -1,3 +1,11 @@
+// -------------------------------------------------------
+// Final Project
+// Written by: Steve Banh 1971537
+// For “Programming 2” Section 02 – Winter 2025
+// --------------------------------------------------------
+/**
+ * This class is mainly for testing our methods in our classes
+ * */
 package files.project_prog2_javafx;
 
 import files.project_prog2_javafx.Exceptions.InvalidAmountException;

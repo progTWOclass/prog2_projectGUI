@@ -1,7 +1,7 @@
 // -------------------------------------------------------
 // Final Project
-// Written by: (include your name and student id)
-// For “Programming 2” Section (include number)– Winter 2025
+// Written by: Steve Banh 1971537
+// For “Programming 2” Section 02 – Winter 2025
 // --------------------------------------------------------
 /**
  * This is an add transaction controller class that has a separate window from the main one. This window allows
@@ -22,7 +22,40 @@
  * We have a loadTran() method that allows the user to load their previous transaction and spending limit text
  * file into our finance tracker.
  *
- * 
+ * We have an addTran() method that will add a transaction (either income or expense) into our observableList and
+ * then load it into the table view. If the transaction is an expense, the method will check if the expense
+ * exceeds the user's spending limit. If it does exceed, the user has the choice to choose whether they want
+ * to continue.
+ *
+ * We have a deleteTran() method that allows the user to select a transaction in the table view
+ * and delete it.
+ *
+ * We have an editTran() method that allows the user to select a transaction in the table view and edit the
+ * transaction. It will bring the user back to the AddController window, and the user can modify any fields
+ * they want.
+ *
+ * We have a limitCategory() method that will add a spending limit for a category set by the user. A
+ * separate window with pop out prompting the user to enter a limit and select a category. The window will
+ * also allow the user to delete an existing spending limit for a category if a limit has been set for it.
+ *
+ * We have a couple of helper methods in this controller:
+ *
+ * A setupTableView() method that will set the acceptable data types and format the output data for each column.
+ * It will then add those data into the table view.
+ *
+ * A setupPieChart() method that will display a pie chart in the MainApplication and split the pie chart into
+ * slices for different category to give the user an idea of which category has the most expenses.
+ *
+ * An updateBalance() method that will constantly update the balance whenever the user adds an income
+ * or an expense. This is to show the user how much money they have.
+ *
+ * An updateSpendingChart() method that will display the user's expenses and the limit they have set for
+ * themselves. This will help the user visualize the difference in between their expenses and limits.
+ *
+ * An updateSpendingLimitStatus() method that lets the user know if they have exceeded their spending limit.
+ *
+ * An welcomeMessage() method to show a welcome message based on the time of the day. For example, the current
+ * time is the morning; then the message will display "good morning!"
  **/
 
 package files.project_prog2_javafx;
@@ -49,6 +82,7 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -67,8 +101,8 @@ public class MainController {
     @FXML private NumberAxis amountAxis;
 
     //LABELS
-    @FXML private Label displayBalance;
-    @FXML private Label displayName;
+    @FXML private Label displaySpendingLim;
+    @FXML private Label welcome;
     @FXML private Label balance;
 
     //TEXTFIELD
@@ -93,6 +127,7 @@ public class MainController {
 
     //FXML METHODS
     @FXML protected void initialize() {
+        welcomeMessage();
         setupTableView();
         updateBalance();
         updateSpendingChart();
@@ -134,7 +169,7 @@ public class MainController {
         fileChooser.setTitle("Save Transaction File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt"));
 
-        //get the window/stage where my tableview is
+        //get the window to save my file
         File file = fileChooser.showSaveDialog(tranTable.getScene().getWindow());
 
         //if the user cancels the window
@@ -145,7 +180,7 @@ public class MainController {
         //previous saved file
         if (file.exists()) {
             Optional<ButtonType> result = showConfirmation("File already exists. Overwrite?");
-            //if the user clicks on the exit (X) button cancel button, or closes the dialog,
+            //If the user clicks on the exit (X) button cancel button, or closes the dialog,
             //the result will be empty or not OK. So, we cancel the operation
             if (result.isEmpty() || result.get() != ButtonType.OK) {
                 return;
@@ -154,23 +189,28 @@ public class MainController {
 
         File limitFile = null;
         if(!manager.getSpendingLimit().isEmpty()){
+            Optional<ButtonType> result = showConfirmation("Do you want to save your spending limits?");
+            if (result.isEmpty() || result.get() != ButtonType.OK) {
+                return;
+            }
+
             fileChooser.setTitle("Save Spending Limit File");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt"));
             limitFile = fileChooser.showSaveDialog(tranTable.getScene().getWindow());
+            //user cancels save the spending limit window
             if(limitFile == null){
                 return;
             }
         }
         try{
-            //Creates a temporary copy of the TableView's data as an ArrayList
-            //Passes this copy to your file saver as to not affect the original data
+            //Creates a temporary copy of the TableView's data as an ArrayList to save making
+            //sure that the save data is exactly the same as when the user presses save
             handleFile.saveToFile(file.getAbsolutePath(),  new ArrayList<>(tranTable.getItems()));
 
-            //Save limits only if they exist and user selected a file
+            //Save limits only if spending limit exists and user clicked on save button in the save window
             if (!manager.getSpendingLimit().isEmpty() && limitFile != null) {
                 handleFile.saveLimits(limitFile.getAbsolutePath(), new ArrayList<>(manager.getSpendingLimit()));
             }
-
             showInfo("Transactions saved successfully to:\n" + file.getAbsolutePath());
         }catch (IOException iOE){
             showError("Cannot save file. Something went wrong");
@@ -182,18 +222,21 @@ public class MainController {
         fileChooser.setTitle("Load Transaction File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text files (*.txt)", "*.txt"));
 
-        //get the window/stage where my tableview is
         File transactionFile = fileChooser.showOpenDialog(tranTable.getScene().getWindow());
+        //if the user cancels the window
         if (transactionFile == null) return;
 
-        //if the user cancels the window
         try {
-            //returns ArrayList<Transaction> as per our method in HandleFileImplement
+            //we need to load into a temporary Arraylist, and then store into our tableview
             ArrayList<Transaction> loadList = handleFile.loadFromFile(transactionFile.getAbsolutePath());
 
-            //add all loaded transactions to the ObservableList wrapper
-            //to automatically notify the TableView to update
+            //add all transactions to the ObservableList
+            //to notify the TableView to update
             tranList.setAll(loadList);
+
+            //for observablelist to stay in sync with FinanceManager and
+            //for FinanceManager to have its own independent copy as
+            //to prevent shared references
             manager.setTransactions(new ArrayList<>(loadList));
 
             Optional<ButtonType> result = showConfirmation("Would you like to load spending limits file?");
@@ -205,7 +248,6 @@ public class MainController {
                     manager.setSpendingLimit(limits);
                 }
             }
-
             updateBalance();
             updateSpendingLimitStatus();
             updateSpendingChart();
@@ -217,24 +259,28 @@ public class MainController {
     }
 
     @FXML protected void addTran() throws IOException {
-        //find and load the fxml file
         FXMLLoader loader = new FXMLLoader(getClass().getResource("addTransaction-view.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setTitle("Add transaction");
+        stage.setResizable(false);//not allowed to resize the window
+        stage.initModality(Modality.APPLICATION_MODAL); //block the main window
 
         //create an instance of AddController to get the controller
         //associated with the fxml file
         AddController addController = loader.getController();
 
-        //takes the new object created of AddController and adds it
+        //takes the new object created in AddController and adds it
         //to the tableview
         addController.setAddNewTransaction(transaction -> {
 
+            //Reset form for new entries (null = not in edit mode)
             addController.loadCurrentInfo(null);
-
             try {
-                //we add the transaction in TableView and let
-                //FinanceManager also know about the update
+                //we add the transaction in TableView while simultaneously
+                //notify FinanceManager about the update
                 tranTable.getItems().add(transaction);
 
                 //update the financeManger internal arraylist (different from arraylist<Transaction> transactionList)
@@ -243,17 +289,17 @@ public class MainController {
                 updateBalance();
                 updateSpendingLimitStatus();
             } catch (SpendingLimitExceededException e) {
-                tranTable.getItems().remove(transaction);
-                showWarning("You have exceeded you spending limit");
+                Optional<ButtonType> result = showConfirmation(
+                        "This will exceed your spending limit. Continue anyway?"
+                );
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    tranTable.getItems().add(transaction);
+                    manager.forceAddTransaction(transaction);
+                    updateBalance();
+                    updateSpendingLimitStatus();
+                }
             }
         });
-
-        //create a new window for addTransaction
-        Stage stage = new Stage();
-        stage.setScene(scene);
-        stage.setTitle("Add transaction");
-        stage.setResizable(false);//not allowed to resize the window
-        stage.initModality(Modality.APPLICATION_MODAL); //block the main window
         stage.showAndWait();
         updateSpendingChart();
         setupPieChart();
@@ -286,19 +332,21 @@ public class MainController {
 
     @FXML protected void editTran() throws IOException {
         Transaction selectedTran = tranTable.getSelectionModel().getSelectedItem();
-
         if (selectedTran == null) {
             showInfo("Please select a transaction to edit");
             return;
         }
-        //find and load the fxml file
         FXMLLoader loader = new FXMLLoader(getClass().getResource("addTransaction-view.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setTitle("Edit Transaction");
+        stage.setResizable(false);//not allowed to resize the window
+        stage.initModality(Modality.APPLICATION_MODAL); //block the main window
 
-        //create an instance of AddController to get the controller
-        //associated with the fxml file
         AddController addController = loader.getController();
+        //load the current transaction information in AddController fields
         addController.loadCurrentInfo(selectedTran);
 
         addController.setAddNewTransaction(updateTransaction -> {
@@ -316,13 +364,6 @@ public class MainController {
                     showWarning("You will exceed your spending limit");
             }
         });
-
-        //create a new window for addTransaction
-        Stage stage = new Stage();
-        stage.setScene(scene);
-        stage.setTitle("Edit Transaction");
-        stage.setResizable(false);//not allowed to resize the window
-        stage.initModality(Modality.APPLICATION_MODAL); //block the main window
         stage.showAndWait();
         updateSpendingChart();
         setupPieChart();
@@ -332,6 +373,11 @@ public class MainController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("spendingLimit-view.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setTitle("Set a Spending Limit");
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
 
         SpendLimController limController = loader.getController();
         limController.setFinanceManager(manager);
@@ -339,7 +385,7 @@ public class MainController {
         limController.setAddNewLimit(spendingLimit -> {
             try {
                 manager.addSpendingLimit(spendingLimit.getCategory(), spendingLimit.getLimit());
-                updateSpendingChart(); // Add this method to update the chart
+                updateSpendingChart();
                 updateSpendingLimitStatus();
 
                 showInfo("Spending limit set for " + spendingLimit.getCategory() + ": $" +
@@ -352,14 +398,7 @@ public class MainController {
         limController.setOnLimitDeleted(category -> {
             updateSpendingChart();
             updateSpendingLimitStatus();
-            showInfo("Spending limit for " + category + " has been removed");
         });
-
-        Stage stage = new Stage();
-        stage.setScene(scene);
-        stage.setTitle("Set a Spending Limit");
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
         stage.showAndWait();
     }
 
@@ -397,24 +436,31 @@ public class MainController {
     private void setupPieChart() {
         // Clear existing data
         pieChart.getData().clear();
+
+        //create 2 different arraylist to separate the categories from the
+        //expenses ammount
         ArrayList<Expense.ExpenseCategory> categories = new ArrayList<>();
         ArrayList<Double> amounts = new ArrayList<>();
         double totalExpense = 0;
 
-        tranList.clear();
-        tranList.addAll(manager.getTransactions());
-        System.out.println("Transactions loaded: " + tranList.size()); // << debug
+        //ensure that we are working with the data in
+        //observablelist<transaction>
+        tranList.setAll(manager.getTransactions());
 
+        //loop through the observablelist to find expenses
         for(Transaction typeTran : tranList){
-            //System.out.println("Transaction: " + t); // << debug
             if(typeTran instanceof Expense){
                 Expense expense = (Expense) typeTran;
                 Expense.ExpenseCategory category = expense.getCategory();
                 double amount = Math.abs(expense.getAmount());
                 totalExpense += amount;
 
+                //check the index to see if the category has come up
+                //more than once
                 int findIndex = categories.indexOf(category);
                 if(findIndex >= 0){
+                    //if category appeared before, add their expenses together
+                    //to group the same expenses together
                     amounts.set(findIndex, amounts.get(findIndex) + amount);
                 }else {
                     categories.add(category);
@@ -423,22 +469,28 @@ public class MainController {
             }
         }
 
+        //an obervablelist to hold pieChart.Data (category and expense amount)
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+
+        //get category and amount from their arraylist
+        //they should have the same index but in their respective arraylist
         for(int i = 0; i < categories.size(); i++){
             Expense.ExpenseCategory getCategory = categories.get(i);
             String categoryTitle = String.valueOf(getCategory);
             double getAmount = amounts.get(i);
-            double findPercent = (getAmount/totalExpense) * 100;
 
+            //add pie chart date into our observablelist
             pieChartData.add(new PieChart.Data(categoryTitle, getAmount));
         }
 
+        //add a temporary blank pie chart until the user adds transactions
         if (pieChartData.isEmpty()) {
-            pieChartData.add(new PieChart.Data("No Data", 1)); // << Add dummy slice
+            pieChartData.add(new PieChart.Data("No Data", 1));
         }
 
+        //display the data in the pie chart
         pieChart.setData(pieChartData);
-        pieChart.setLegendVisible(false);
+        pieChart.setLegendVisible(true);
         pieChart.setLabelsVisible(true);
     }
 
@@ -447,66 +499,66 @@ public class MainController {
     }
 
     private void updateSpendingChart() {
-        // Clear any existing data from the chart
+        //Clear any existing data from the chart
         spLimitGraph.getData().clear();
 
-        // Create two data series - one for actual expenses and one for spending limits
+        //Create two data series - one for actual expenses and one for spending limits
         XYChart.Series<String, Number> expenseSeries = new XYChart.Series<>();
         expenseSeries.setName("Expenses");
 
         XYChart.Series<String, Number> limitSeries = new XYChart.Series<>();
         limitSeries.setName("Limits");
 
-        // These lists will track our expense categories and their values
+        //3 arraylists to track our expense categories, their values
+        //and their spending limits
         ArrayList<Expense.ExpenseCategory> categories = new ArrayList<>();
         ArrayList<Double> limits = new ArrayList<>();
         ArrayList<Double> expenses = new ArrayList<>();
 
-        // Step 1: Get all categories that have spending limits
+        //Get all categories that have spending limits
         for (SpendingLimit limit : manager.getSpendingLimit()) {
-            categories.add(limit.getCategory());  // Add the category
-            limits.add(limit.getLimit());         // Add the limit amount
-            expenses.add(0.0);                    // Initialize expense amount to zero
+            categories.add(limit.getCategory());  //Add the category
+            limits.add(limit.getLimit());         //Store their limit amount
+            expenses.add(0.0);                    //Initialize expense amount to zero
         }
 
-        // Step 2: Calculate how much has been spent in each category
+        //Calculate how much has been spent in each category by
+        //looping through transactions
         for (Transaction transaction : manager.getTransactions()) {
-            // Only process expense transactions
             if (transaction instanceof Expense) {
                 Expense expense = (Expense) transaction;
 
-                // Find this expense's category in our list
+                //Find if "categories" list matches the category of expense transaction
+                //if it does, get the index for "expenses" list and add their expenses
                 int position = categories.indexOf(expense.getCategory());
 
-                // If we found the category (it has a spending limit)
+                //If we found the category (it has a spending limit)
                 if (position >= 0) {
-                    // Get the current amount for this category
+                    //Get the current amount for this category
                     double currentAmount = expenses.get(position);
 
-                    // Add the transaction amount to the total
-                    // (using absolute value since expenses are negative)
+                    //Add the transaction amount to the total
                     expenses.set(position, currentAmount + Math.abs(expense.getAmount()));
                 }
             }
         }
 
-        // Step 3: Add all data to the chart
+        //Add all data to the chart
         boolean hasData = false;
-
         for (int i = 0; i < categories.size(); i++) {
             String categoryName = categories.get(i).toString().toLowerCase();
             double limitAmount = limits.get(i);
             double expenseAmount = expenses.get(i);
 
-            // Add this category's data to both series
+            //Add this category's data to both series
             limitSeries.getData().add(new XYChart.Data<>(categoryName, limitAmount));
             expenseSeries.getData().add(new XYChart.Data<>(categoryName, expenseAmount));
             hasData = true;
         }
 
-        // Step 4: Only adjust the chart if we have data to show
+        //Only adjust the chart if we have data to show
         if (hasData) {
-            // Find the maximum value for scaling the chart
+            //Find the maximum value for scaling the chart
             double maxLimit = 0.0;
             for (Double limitValue : limits) {
                 if (limitValue > maxLimit) {
@@ -520,14 +572,16 @@ public class MainController {
                     maxExpense = expenseValue;
                 }
             }
-
-            // Use the larger of the two maximums
+            //Use the larger of the two maximums to determine which
+            //one will have the highest bar
             double chartMax = Math.max(maxLimit, maxExpense);
 
-            // Add 10% padding to make the chart look nicer
+            //then Add 10% padding for chartMax to prevent the top of the bar
+            //from reaching the last line.
+            //mainly for aesthetics of the chart
             if (amountAxis != null && chartMax > 0) {
                 amountAxis.setUpperBound(chartMax * 1.1);
-                amountAxis.setTickUnit(chartMax / 5); // Create 5 tick marks
+                amountAxis.setTickUnit(chartMax / 5); //Create 5 tick marks
             }
 
             // Add both series to the chart
@@ -535,10 +589,10 @@ public class MainController {
             spLimitGraph.getData().add(limitSeries);
         }
 
-        // Step 5: Make the chart look nice
+        //Make the chart look nice
         spLimitGraph.setCategoryGap(40);
         spLimitGraph.setBarGap(3);
-        spLimitGraph.setAnimated(false);
+        spLimitGraph.setAnimated(true);
         spLimitGraph.setLegendVisible(true);
     }
 
@@ -549,20 +603,34 @@ public class MainController {
         // Calculate how many categories are over their limit
         for (SpendingLimit limit : manager.getSpendingLimit()) {
             double spent = manager.getCurrentSpendingLimit(limit.getCategory());
-
             if (spent > limit.getLimit()) {
                 overLimit++;
             }
         }
-
-        // Update the label text
         if (totalCategories > 0) {
-            displayName.setText(
+            displaySpendingLim.setText(
                     String.format("%d/%d categories over spending limit", overLimit, totalCategories)
             );
         } else {
-            displayName.setText("No spending limits set");
+            displaySpendingLim.setText("");
         }
+    }
+
+    private void welcomeMessage(){
+        LocalTime now = LocalTime.now();
+        String greeting;
+
+        if (now.isBefore(LocalTime.NOON)) {
+            greeting = "Good morning!";
+        } else if (now.isBefore(LocalTime.of(17, 0))) {
+            greeting = "Good afternoon!";
+        } else if (now.isBefore(LocalTime.of(21, 0))) {
+            greeting = "Good evening!";
+        } else {
+            greeting = "Good night!";
+        }
+
+        welcome.setText(greeting);
     }
 
     private void showInfo(String message) {

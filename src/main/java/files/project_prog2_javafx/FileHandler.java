@@ -1,7 +1,7 @@
 // -------------------------------------------------------
 // Final Project
-// Written by: (include your name and student id)
-// For “Programming 2” Section (include number)– Winter 2025
+// Written by: Steve Banh 1971537
+// For “Programming 2” Section 02 – Winter 2025
 // --------------------------------------------------------
 /**
  * This file is an interface, and it only contains method signatures (does not have a body).

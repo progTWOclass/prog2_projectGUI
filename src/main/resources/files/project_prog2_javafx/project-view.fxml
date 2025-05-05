@@ -41,9 +41,9 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <Label fx:id="displayName" layoutX="1014.0" layoutY="28.0" text="Name">
+      <Label fx:id="displaySpendingLim" layoutX="937.0" layoutY="14.0" text="Name">
          <font>
-            <Font size="14.0" />
+            <Font size="18.0" />
          </font>
       </Label>
       <PieChart fx:id="pieChart" layoutX="816.0" layoutY="412.0" prefHeight="350.0" prefWidth="470.0" title="Expense chart" />
@@ -62,5 +62,10 @@
           <NumberAxis side="LEFT" />
         </yAxis>
       </BarChart>
+      <Label fx:id="welcome" layoutX="24.0" layoutY="24.0" text="Name">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

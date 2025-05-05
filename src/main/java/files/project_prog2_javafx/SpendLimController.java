@@ -1,7 +1,7 @@
 // -------------------------------------------------------
 // Final Project
-// Written by: (include your name and student id)
-// For “Programming 2” Section (include number)– Winter 2025
+// Written by: Steve Banh 1971537
+// For “Programming 2” Section 02 – Winter 2025
 // --------------------------------------------------------
 /**
  * This is a spending limit controller class that has a separate window from the main one. This class allows the
@@ -68,7 +68,12 @@ public class SpendLimController {
         this.addSPLimit = callback;
     }
 
-
+    /**
+     * synchronize the spending limit controller FinanceManager to the main controller's
+     * FinanceManager that already contains all transactions and spending limits.
+     * without this, the user can only add spending limit via setAddNewLimit()
+     * but not delete it
+     * */
     public void setFinanceManager(FinanceManager manager) {
         this.manageSPLimit = manager;
     }
